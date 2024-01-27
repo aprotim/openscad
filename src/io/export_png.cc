@@ -9,6 +9,7 @@
 #ifndef NULLGL
 
 #include "CGALRenderer.h"
+#include "PolySetRenderer.h"
 #ifdef ENABLE_LEGACY_RENDERERS
 #include "LegacyCGALRenderer.h"
 #endif
@@ -29,20 +30,27 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
-  std::shared_ptr<Renderer> cgalRenderer;
+  std::shared_ptr<Renderer> geomRenderer;
   if (Feature::ExperimentalVxORenderers.is_enabled()) {
-    cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+
+    // Choose PolySetRenderer for Manifold and FastCsg since we know that all
+    // geometries are convertible to PolySet.
+    if (Feature::ExperimentalManifold.is_enabled() || Feature::ExperimentalFastCsg.is_enabled()) {
+      geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
+    } else {
+      geomRenderer = std::make_shared<CGALRenderer>(root_geom);
+    }
   }
 #ifdef ENABLE_LEGACY_RENDERERS
   else {
-    cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
+    geomRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
   }
 #endif
-  BoundingBox bbox = cgalRenderer->getBoundingBox();
+  BoundingBox bbox = geomRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);
-  glview->setRenderer(cgalRenderer);
+  glview->setRenderer(geomRenderer);
   glview->setColorScheme(RenderSettings::inst()->colorscheme);
   glview->setShowFaces(!options["wireframe"]);
   glview->setShowCrosshairs(options["crosshairs"]);
