@@ -592,8 +592,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           LOG("Converted to Nef polyhedron");
         }
       } else {
-	// FIXME: The default geometry doesn't need to be a Nef polyhedron. Why not make it a PolySet?
-        root_geom = std::make_shared<CGAL_Nef_polyhedron>();
+        root_geom = std::make_shared<PolySet>(3);
       }
     }
 #endif
