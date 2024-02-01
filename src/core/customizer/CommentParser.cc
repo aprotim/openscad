@@ -12,6 +12,7 @@
 struct GroupInfo {
   std::string commentString;
   int lineNo;
+  std::string description;
 };
 
 using GroupList = std::vector<GroupInfo>;
@@ -181,6 +182,7 @@ static GroupInfo createGroup(std::string comment, int lineNo)
 
   groupInfo.commentString = finalGroupName;
   groupInfo.lineNo = lineNo;
+  groupInfo.description = comment;
   return groupInfo;
 }
 
